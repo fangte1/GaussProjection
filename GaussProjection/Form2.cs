@@ -157,7 +157,7 @@ namespace GaussProjection
             e2 = 0.0066943799013;
             e12 = 0.00673949674227;
             d2r = 180 * 3600 / Math.PI;
-
+            l = 0;
             m0 = a * (1 - e2);
             m2 = 3 * e2 * m0 / 2;
             m4 = 5 * e2 * m2 / 4;
@@ -169,12 +169,32 @@ namespace GaussProjection
             a6 = m6 / 32 + m8 / 16;
             a8 = m8 / 128;
 
-            n0 = (L / 3600) / zoning;
-            n = Math.Ceiling(n0);
-            L0 = zoning * n * 3600;
-            l = L - L0;
+            if (zoning == 6)
+            {
+                l = 0;
+                n0 = (L / 3600) / 6.0;
+                n = Math.Ceiling(n0);
+                L0 = (6 * n - 3) * 3600;
+                l = L - L0;
+            }
+            else if (zoning == 3)
+            {
+                l = 0;
+                n = (int)((L / 3600) / 3.0);
+                L0 = 3 * n * 3600;
+                l = L - L0;
+            }
+            else if (zoning == 1.5)
+            {
+                l = 0;
+                n = (int)((L / 3600) / 1.5);
+                L0 = 1.5 * n * 3600;
+                l = L - L0;
+            }
 
-            W = Math.Sqrt(1 - e2 * Math.Sin(B / d2r) * Math.Sin(B / d2r));
+
+
+           W = Math.Sqrt(1 - e2 * Math.Sin(B / d2r) * Math.Sin(B / d2r));
             N = a / W;
             t2 = Math.Tan(B / d2r) * Math.Tan(B / d2r);
             n2 = e12 * Math.Cos(B / d2r) * Math.Cos(B / d2r);
