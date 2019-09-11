@@ -6,15 +6,15 @@ using System.Windows.Forms.DataVisualization.Charting;
 
 namespace GaussProjection
 {
-    public partial class Form2 : Form
+    public partial class FormUI : Form
     {
         private readonly List<Point> _points = new List<Point>();
         private Point _orgPoint;// 原点坐标
         private double _fAxesArea = 20;
-        
+
         #region
 
-        public Form2()
+        public FormUI()
         {
             InitializeComponent();
         }
@@ -56,7 +56,7 @@ namespace GaussProjection
 
             _orgPoint = BL2XY(bd, bf, bm, ld, lf, lm);
             AppendLog($"原点转换后坐标:(x={_orgPoint.X},y={_orgPoint.Y}) => (0,0)");
-            
+
             InitPoints();
             InitTestChart();
         }
@@ -106,10 +106,10 @@ namespace GaussProjection
             _points.Add(BL2XY(27, 59, 8.18, 113, 11, 17.05));
             _points.Add(BL2XY(27, 59, 11.15, 113, 11, 11.18));
             _points.Add(BL2XY(27, 59, 8.35, 113, 11, 7.98));
-            _points.Add(BL2XY(27, 59, 10.77, 113, 11, 5.08));
+            //_points.Add(BL2XY(27, 59, 10.77, 113, 11, 5.08));
             _points.Add(BL2XY(27, 59, 12.14, 113, 11, 7.90));
         }
-        
+
         /// <summary>
         /// 原点将经纬度转化为平面坐标
         /// </summary>
@@ -131,15 +131,15 @@ namespace GaussProjection
                 zoning = 1.5;
 
             Point p = BL2XY(b, l, zoning);
-            AppendLog($"转化后坐标：({p.Y},{p.X})");
+            AppendLog($"高斯投影坐标：({p.Y},{p.X})");
 
             if (_orgPoint.Y == 0 && _orgPoint.X == 0)
             {
-                AppendLog($"优化后坐标：(0,0)");
+                AppendLog($"相对直角坐标：(0,0)");
             }
             else
             {
-                AppendLog($"优化后坐标：({Math.Round(p.Y - _orgPoint.Y, 0)},{Math.Round(p.X - _orgPoint.X, 0)})");
+                AppendLog($"相对直角坐标：({Math.Round(p.Y - _orgPoint.Y, 0)},{Math.Round(p.X - _orgPoint.X, 0)})");
             }
             return p;
         }
@@ -147,9 +147,13 @@ namespace GaussProjection
         /// <summary>
         /// 将经纬度转化为平面坐标
         /// </summary>
+        /// <param name="B">纬度</param>
+        /// <param name="L">经度</param>
+        /// <param name="zoning">分带</param>
+        /// <returns></returns>
         private Point BL2XY(double B, double L, double zoning)
         {
-            double d2r, a, e2, e12, l, X, 
+            double d2r, a, e2, e12, l, X,
                    m0, m2, m4, m6, m8, a0, a2, a4, a6, a8,
                    W, N, t2, n2, n0, n, L0, x, y;
 
@@ -192,9 +196,7 @@ namespace GaussProjection
                 l = L - L0;
             }
 
-
-
-           W = Math.Sqrt(1 - e2 * Math.Sin(B / d2r) * Math.Sin(B / d2r));
+            W = Math.Sqrt(1 - e2 * Math.Sin(B / d2r) * Math.Sin(B / d2r));
             N = a / W;
             t2 = Math.Tan(B / d2r) * Math.Tan(B / d2r);
             n2 = e12 * Math.Cos(B / d2r) * Math.Cos(B / d2r);
@@ -232,10 +234,10 @@ namespace GaussProjection
             //清理Chart
             TestChart.ChartAreas.Clear();
             TestChart.Series.Clear();
-            
+
             //添加xy轴及刻度尺
             TestChart.ChartAreas.Add(CreateChartArea());
-            
+
             //增加所有的xy轴点
             Series series = CreatePointSeries("POINT", Color.Red, 5);
             AddPointsToSeries(series, points);
@@ -252,15 +254,15 @@ namespace GaussProjection
             list.Add(new PointF(0, 0));
             foreach (var point in _points)
             {
-                int xx = (int)(point.X - _orgPoint.X);
-                int yy = (int)(point.Y - _orgPoint.Y);
+                var xx = point.X - _orgPoint.X;
+                var yy = point.Y - _orgPoint.Y;
 
-                list.Add(new PointF(yy, xx));
+                list.Add(new PointF((float)Math.Round(yy,0),(float) Math.Round(xx,0)));
             }
 
             return list;
         }
-        
+
         /// <summary>
         /// 添加xy轴及刻度尺
         /// </summary>
@@ -315,7 +317,7 @@ namespace GaussProjection
 
                 #endregion
             };
-            
+
             return caArea;
         }
 

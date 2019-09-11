@@ -1,6 +1,6 @@
 ﻿namespace GaussProjection
 {
-    partial class Form2
+    partial class FormUI
     {
         /// <summary>
         /// Required designer variable.
