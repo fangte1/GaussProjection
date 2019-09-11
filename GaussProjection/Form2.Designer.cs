@@ -52,6 +52,7 @@
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.txtPoints = new System.Windows.Forms.RichTextBox();
             this.TestChart = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.btn_InitData = new System.Windows.Forms.Button();
             this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.groupBox1.SuspendLayout();
@@ -247,19 +248,19 @@
             // 
             // btn_setorg
             // 
-            this.btn_setorg.Location = new System.Drawing.Point(29, 182);
+            this.btn_setorg.Location = new System.Drawing.Point(121, 182);
             this.btn_setorg.Name = "btn_setorg";
-            this.btn_setorg.Size = new System.Drawing.Size(104, 36);
+            this.btn_setorg.Size = new System.Drawing.Size(93, 36);
             this.btn_setorg.TabIndex = 4;
-            this.btn_setorg.Text = "初始化坐标";
+            this.btn_setorg.Text = "设置原点";
             this.btn_setorg.UseVisualStyleBackColor = true;
             this.btn_setorg.Click += new System.EventHandler(this.btn_setorg_Click);
             // 
             // btnAddPoint
             // 
-            this.btnAddPoint.Location = new System.Drawing.Point(181, 182);
+            this.btnAddPoint.Location = new System.Drawing.Point(223, 182);
             this.btnAddPoint.Name = "btnAddPoint";
-            this.btnAddPoint.Size = new System.Drawing.Size(104, 36);
+            this.btnAddPoint.Size = new System.Drawing.Size(88, 36);
             this.btnAddPoint.TabIndex = 4;
             this.btnAddPoint.Text = "增加坐标";
             this.btnAddPoint.UseVisualStyleBackColor = true;
@@ -295,17 +296,28 @@
             this.TestChart.TabIndex = 24;
             this.TestChart.Text = "TestChart";
             // 
+            // btn_InitData
+            // 
+            this.btn_InitData.Location = new System.Drawing.Point(11, 182);
+            this.btn_InitData.Name = "btn_InitData";
+            this.btn_InitData.Size = new System.Drawing.Size(98, 36);
+            this.btn_InitData.TabIndex = 4;
+            this.btn_InitData.Text = "初始测试数据";
+            this.btn_InitData.UseVisualStyleBackColor = true;
+            this.btn_InitData.Click += new System.EventHandler(this.btn_InitData_Click);
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(938, 513);
             this.Controls.Add(this.TestChart);
+            this.Controls.Add(this.btn_setorg);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.groupBox5);
             this.Controls.Add(this.groupBox4);
             this.Controls.Add(this.btnAddPoint);
-            this.Controls.Add(this.btn_setorg);
+            this.Controls.Add(this.btn_InitData);
             this.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
             this.Name = "Form2";
             this.Text = "GPS坐标转平面坐标";
@@ -345,5 +357,6 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.RichTextBox txtPoints;
         private System.Windows.Forms.DataVisualization.Charting.Chart TestChart;
+        private System.Windows.Forms.Button btn_InitData;
     }
 }

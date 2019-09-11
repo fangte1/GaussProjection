@@ -15,7 +15,7 @@ namespace GaussProjection
         private double d2r = 180 * 3600 / Math.PI;
 
         private double _fAxesArea = 20;
-      //private double _fAxesAreaY = 20;
+        //private double _fAxesAreaY = 20;
 
 
 
@@ -26,9 +26,34 @@ namespace GaussProjection
             InitializeComponent();
         }
 
+        /// <summary>
+        /// 初始化坐标集合,以荆州东方神画为例
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btn_InitData_Click(object sender, EventArgs e)
+        {
+            //北纬N27°59′14.80″ 东经E113°11′14.35″
+
+            if (!string.IsNullOrWhiteSpace(txtPoints.Text))
+                txtPoints.AppendText(Environment.NewLine);
+            //txtPoints.AppendText($"原点：北纬N27°59′14.80″ 东经E113°11′14.35″");
+
+            Point p = BL2XY(27, 59, 14.80, 113, 11, 14.35);
+            orgPoint.X = p.X;
+            orgPoint.Y = p.Y;
+
+            //txtPoints.AppendText($"原点转换后坐标:(x={orgPoint.X},y={orgPoint.Y}) => (0,0)");
+
+            btn_InitData.Enabled = false;
+
+            InitPoints();
+            InitTestChart();
+        }
+
         ///////////////////
         private void Form2_Load(object sender, EventArgs e)
-        {         
+        {
         }
 
 
@@ -47,6 +72,7 @@ namespace GaussProjection
             //北纬N27°59′10.77″ 东经E113°11′5.08″
             //北纬N27°59′12.14″ 东经E113°11′7.90″
 
+            points = new List<Point>();
             points.Add(BL2XY(27, 59, 20.13, 113, 11, 7.63));
             points.Add(BL2XY(27, 59, 17.19, 113, 11, 21.23));
             points.Add(BL2XY(27, 59, 14.83, 113, 11, 22.41));
@@ -57,31 +83,27 @@ namespace GaussProjection
             points.Add(BL2XY(27, 59, 10.77, 113, 11, 5.08));
             points.Add(BL2XY(27, 59, 12.14, 113, 11, 7.90));
 
-            for (int i = 0; i < points.Count; i++)
-            {
-                txtPoints.AppendText(Environment.NewLine);
-                txtPoints.AppendText($"第{i + 1}个点：x={points[i].X},y={points[i].Y}");
-            }
+            //for (int i = 0; i < points.Count; i++)
+            //{
+            //    txtPoints.AppendText(Environment.NewLine);
+            //    //txtPoints.AppendText($"第{i + 1}个点：x={points[i].X},y={points[i].Y}");
+            //}
         }
 
         /// <summary>
-        /// 初始化坐标
+        /// 设置原点坐标
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void btn_setorg_Click(object sender, EventArgs e)
         {
-            //北纬N27°59′14.80″ 东经E113°11′14.35″
-
-            if (!string.IsNullOrWhiteSpace(txtPoints.Text))
-                txtPoints.AppendText(Environment.NewLine);
-            //txtPoints.AppendText($"原点：北纬N27°59′14.80″ 东经E113°11′14.35″");
-
-            Point p = BL2XY(27, 59, 14.80, 113, 11, 14.35);
+            Point p = BL2XY(
+                Convert.ToInt32(txt_org_b_d.Text), Convert.ToInt32(txt_org_b_f.Text),Convert.ToDouble(txt_org_b_m.Text),
+                Convert.ToInt32(txt_org_l_f.Text), Convert.ToInt32(txt_org_l_f.Text), Convert.ToDouble(txt_org_l_m.Text));
             orgPoint.X = p.X;
             orgPoint.Y = p.Y;
 
-            txtPoints.AppendText($"原点转换后坐标:(x={orgPoint.X},y={orgPoint.Y}) => (0,0)");
+            //txtPoints.AppendText($"原点转换后坐标:(x={orgPoint.X},y={orgPoint.Y}) => (0,0)");
 
             btn_setorg.Enabled = false;
 
@@ -108,25 +130,8 @@ namespace GaussProjection
             Point p = BL2XY(Bd, Bf, Bm, Ld, Lf, Lm);
             points.Add(p);
             txtPoints.AppendText(Environment.NewLine);
-            txtPoints.AppendText($"第{points.Count}个点：x={p.X},y={p.Y}");
-
-            //Point p2 = BL2XY(27, 59, 14.66, 113, 11, 14.54);.
-            //points.Add(p2);
-            //txtPoints.AppendText(Environment.NewLine);
-            //txtPoints.AppendText($"第{points.Count}个点：x={p2.X},y={p2.Y}");
-
-            ////北纬N27°59′13.98″ 东经E113°11′15.12″
-            //Point p3 = BL2XY(27, 59, 13.98, 113, 11, 15.12);
-            //points.Add(p3);
-            //txtPoints.AppendText(Environment.NewLine);
-            //txtPoints.AppendText($"第{points.Count}个点：x={p3.X},y={p3.Y}");
-
-            //         TestChart.Series[POINT_SERIES_NAME].Points.Clear();
-            //var ppoints = MakeTestData();
-            //AddPoints(TestChart.Series[POINT_SERIES_NAME], ppoints);
-            ////TestChart.ChartAreas.Add(CreateChartArea());
-            ////TestChart.Series.Add(s);
-            //UpdateChartArea(TestChart.ChartAreas[0]);
+            //txtPoints.AppendText($"第{points.Count}个点：x={p.X},y={p.Y}");
+            txtPoints.AppendText($"转化后坐标为：({p.X},{p.Y})");
 
             InitTestChart();
 
@@ -139,18 +144,19 @@ namespace GaussProjection
         /// <returns></returns>
         private Point BL2XY(int d1, int f1, double m1, int d2, int f2, double m2)
         {
-            string preLog = "北纬N";
-            string preLat = "东经E";
+            string preLog = "N";
+            string preLat = "E";
             if (d1 < 0)
             {
-                preLog = "南纬S";
+                preLog = "S";
             }
             if (d2 < 0)
             {
-                preLat = "西经W";
+                preLat = "W";
             }
             txtPoints.AppendText(Environment.NewLine);
-            txtPoints.AppendText($"{preLog}{d1}°{f1}′{m1}″ {preLat}{d2}°{f2}′{m2}″");
+            txtPoints.AppendText($"{preLog}{d1}°{f1}′{m1}″,{preLat}{d2}°{f2}′{m2}″");
+            txtPoints.AppendText(Environment.NewLine);
             double B, L;
             B = (d1 * 3600 + f1 * 60 + m1);
             L = (d2 * 3600 + f2 * 60 + m2);
@@ -169,6 +175,17 @@ namespace GaussProjection
             }
             Point p = BL2XY(B, L, zoning);
 
+            txtPoints.AppendText($"转化后坐标：({p.Y},{p.X})");
+            txtPoints.AppendText(Environment.NewLine);
+            if (orgPoint.Y == 0 && orgPoint.X == 0)
+            {
+                txtPoints.AppendText($"优化后坐标：(0,0)");
+            }
+            else
+            {
+                txtPoints.AppendText($"优化后坐标：({Math.Round(p.Y - orgPoint.Y, 0)},{Math.Round(p.X - orgPoint.X, 0)})");
+            }
+            txtPoints.AppendText(Environment.NewLine);
             return p;
         }
 
@@ -219,7 +236,7 @@ namespace GaussProjection
         #endregion
 
 
-      
+
 
         double tempMaxX = 0; double tempMaxY = 0;
         private void InitTestChart()
@@ -231,7 +248,7 @@ namespace GaussProjection
 
             // 取最大值
             var xxxyyy = new SortedSet<double>();
-           
+
             for (int i = 0; i < ppoints.Count; i++)
             {
                 xxxyyy.Add(Math.Abs(ppoints[i].X));
@@ -239,10 +256,10 @@ namespace GaussProjection
             }
             foreach (var item in xxxyyy)
             {
-                if (item > _fAxesArea )
-                    _fAxesArea  = item;
+                if (item > _fAxesArea)
+                    _fAxesArea = item;
             }
-              
+
 
 
             //添加xy轴及刻度尺
@@ -274,7 +291,7 @@ namespace GaussProjection
                     ArrowStyle = AxisArrowStyle.Triangle,
                     IntervalAutoMode = IntervalAutoMode.VariableCount,
                     Interval =Math.Round( 2 * _fAxesArea / 10 > 1 ? 2 * _fAxesArea / 10 : 1,0),
-   
+                    Title ="X轴",
                    Maximum = _fAxesArea,
                    Minimum = -_fAxesArea,
                     MajorGrid = new Grid()
@@ -291,7 +308,7 @@ namespace GaussProjection
                     ArrowStyle =  AxisArrowStyle.Triangle,
                     IntervalAutoMode = IntervalAutoMode.VariableCount,
                     Interval =Math.Round( 2 * _fAxesArea / 10 > 1 ? 2 * _fAxesArea / 10 : 1,0),
-
+                        Title="Y轴", TextOrientation=TextOrientation.Horizontal,
                    Maximum = _fAxesArea,
                    Minimum = -_fAxesArea,
                     MajorGrid = new Grid()
@@ -348,28 +365,17 @@ namespace GaussProjection
                 MarkerStyle = MarkerStyle.Circle,
                 BorderDashStyle = ChartDashStyle.Dot,
                 IsValueShownAsLabel = true,
-                 
-         
+
+                Label = "(#VALX,#VAL)",
+
                 SmartLabelStyle = new SmartLabelStyle()
-                {  
+                {
 
                 },
             };
             return series;
         }
 
-        //private void UpdatePoints(Series series, List<PointF> points)
-        //{
-        //    double[] xArray = new double[points.Count];
-        //    double[] yArray = new double[points.Count];
-        //    for (int i = 0; i < points.Count; i++)
-        //    {
-        //        var item = points[i];
-        //        xArray[i] = item.X;
-        //        yArray[i] = item.Y;
-        //    }
-        //    series.Points.DataBindXY(xArray, yArray);
-        //}
         private void UpdatePoints(Series series, List<PointF> points)
         {
             for (int i = 0; i < points.Count; i++)
@@ -390,12 +396,12 @@ namespace GaussProjection
             list.Add(new PointF(0, 0));
             for (int i = 0; i < points.Count; i++)
             {
-                var xx = (int)(points[i].X - orgPoint.X);
+                var xx = points[i].X - orgPoint.X;
 
-                var yy = (int)(points[i].Y - orgPoint.Y);
+                var yy = points[i].Y - orgPoint.Y;
                 //list.Add(new PointF((float)xx, (float)yy));
 
-                list.Add(new PointF((float)yy, (float)xx));
+                list.Add(new PointF((float)Math.Round(yy,0), (float)Math.Round(xx,0)));
             }
             return list;
         }
