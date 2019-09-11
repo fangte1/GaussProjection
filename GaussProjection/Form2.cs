@@ -20,15 +20,41 @@ namespace GaussProjection
         }
 
         /// <summary>
+        /// 初始化坐标集合,以荆州东方神画为例
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btn_InitData_Click(object sender, EventArgs e)
+        {
+            _points.Clear();
+            txtLogs.ResetText();
+
+            //北纬N27°59′14.80″ 东经E113°11′14.35″
+            _orgPoint = BL2XY(27, 59, 14.80, 113, 11, 14.35);
+            AppendLog($"原点转换后坐标:(x={_orgPoint.X},y={_orgPoint.Y}) => (0,0)");
+
+            InitPoints();
+            InitTestChart();
+        }
+
+
+        /// <summary>
         /// 初始化坐标
         /// </summary>
         private void btnSetOrgin_Click(object sender, EventArgs e)
         {
-            _points.Clear();
-            _txtLogs.ResetText();
+            int bd, bf, ld, lf;
+            double bm, lm;
 
-            //北纬N27°59′14.80″ 东经E113°11′14.35″
-            _orgPoint = BL2XY(27, 59, 14.80, 113, 11, 14.35);
+            int.TryParse(txt_org_b_d.Text, out bd);
+            int.TryParse(txt_org_b_f.Text, out bf);
+            double.TryParse(txt_org_b_m.Text, out bm);
+
+            int.TryParse(txt_org_l_d.Text, out ld);
+            int.TryParse(txt_org_l_f.Text, out lf);
+            double.TryParse(txt_org_l_m.Text, out lm);
+
+            _orgPoint = BL2XY(bd, bf, bm, ld, lf, lm);
             AppendLog($"原点转换后坐标:(x={_orgPoint.X},y={_orgPoint.Y}) => (0,0)");
             
             InitPoints();
@@ -43,17 +69,16 @@ namespace GaussProjection
             int bd, bf, ld, lf;
             double bm, lm;
 
-            int.TryParse(_txt_org_b_d.Text, out bd);
-            int.TryParse(_txt_org_b_f.Text, out bf);
-            double.TryParse(_txt_org_b_m.Text, out bm);
-
-            int.TryParse(_txt_org_l_d.Text, out ld);
-            int.TryParse(_txt_org_l_f.Text, out lf);
-            double.TryParse(_txt_org_l_m.Text, out lm);
+            int.TryParse(txt_org_b_d.Text, out bd);
+            int.TryParse(txt_org_b_f.Text, out bf);
+            double.TryParse(txt_org_b_m.Text, out bm);
+            int.TryParse(txt_org_l_d.Text, out ld);
+            int.TryParse(txt_org_l_f.Text, out lf);
+            double.TryParse(txt_org_l_m.Text, out lm);
 
             Point p = BL2XY(bd, bf, bm, ld, lf, lm);
             _points.Add(p);
-            AppendLog($"第{_points.Count + 1}个点：x={p.X},y={p.Y}");
+            AppendLog($"转化后坐标为：({p.X},{p.Y})");
 
             InitTestChart();
         }
@@ -73,6 +98,7 @@ namespace GaussProjection
             //北纬N27°59′10.77″ 东经E113°11′5.08″
             //北纬N27°59′12.14″ 东经E113°11′7.90″
 
+            _points.Clear();
             _points.Add(BL2XY(27, 59, 20.13, 113, 11, 7.63));
             _points.Add(BL2XY(27, 59, 17.19, 113, 11, 21.23));
             _points.Add(BL2XY(27, 59, 14.83, 113, 11, 22.41));
@@ -82,11 +108,6 @@ namespace GaussProjection
             _points.Add(BL2XY(27, 59, 8.35, 113, 11, 7.98));
             _points.Add(BL2XY(27, 59, 10.77, 113, 11, 5.08));
             _points.Add(BL2XY(27, 59, 12.14, 113, 11, 7.90));
-
-            for (int i = 0; i < _points.Count; i++)
-            {
-                AppendLog($"第{i + 1}个点：x={_points[i].X},y={_points[i].Y}");
-            }
         }
         
         /// <summary>
@@ -94,22 +115,32 @@ namespace GaussProjection
         /// </summary>
         private Point BL2XY(int bd, int bf, double bm, int ld, int lf, double lm)
         {
-            string preLng = bd < 0 ? "南纬S" : "北纬N";
-            string preLat = ld < 0 ? "西经W" : "东经E";
+            string preLng = bd < 0 ? "S" : "N";
+            string preLat = ld < 0 ? "W" : "E";
             AppendLog($"{preLng}{bd}°{bf}′{bm}″ {preLat}{ld}°{lf}′{lm}″");
 
             double b = bd * 3600 + bf * 60 + bm;
             double l = ld * 3600 + lf * 60 + lm;
 
             double zoning = 6.0;
-            if (_radio_zoning_6.Checked)
+            if (radio_zoning_6.Checked)
                 zoning = 6.0;
-            else if (_radio_zoning_3.Checked)
+            else if (radio_zoning_3.Checked)
                 zoning = 3.0;
-            else if (_radio_zoning_1_5.Checked)
+            else if (radio_zoning_1_5.Checked)
                 zoning = 1.5;
 
             Point p = BL2XY(b, l, zoning);
+            AppendLog($"转化后坐标：({p.Y},{p.X})");
+
+            if (_orgPoint.Y == 0 && _orgPoint.X == 0)
+            {
+                AppendLog($"优化后坐标：(0,0)");
+            }
+            else
+            {
+                AppendLog($"优化后坐标：({Math.Round(p.Y - _orgPoint.Y, 0)},{Math.Round(p.X - _orgPoint.X, 0)})");
+            }
             return p;
         }
 
@@ -170,12 +201,12 @@ namespace GaussProjection
 
             // 刻度尺最大值
             var sort = new SortedSet<double>();
-            sort.Add(_fAxesArea);
             foreach (var point in points)
             {
                 sort.Add(Math.Abs(point.X));
                 sort.Add(Math.Abs(point.Y));
             }
+            sort.Add(_fAxesArea);
             _fAxesArea = sort.Max;
 
             //清理Chart
@@ -224,6 +255,7 @@ namespace GaussProjection
                     ArrowStyle = AxisArrowStyle.Triangle,
                     IntervalAutoMode = IntervalAutoMode.VariableCount,
                     Interval = Math.Round( 2 * _fAxesArea / 10 > 1 ? 2 * _fAxesArea / 10 : 1,0),
+                    Title ="X轴",
                     Maximum = _fAxesArea,
                     Minimum = -_fAxesArea,
                     MajorGrid = new Grid() { Enabled = false },
@@ -245,6 +277,8 @@ namespace GaussProjection
                     ArrowStyle =  AxisArrowStyle.Triangle,
                     IntervalAutoMode = IntervalAutoMode.VariableCount,
                     Interval = Math.Round( 2 * _fAxesArea / 10 > 1 ? 2 * _fAxesArea / 10 : 1,0),
+                    Title="Y轴",
+                    TextOrientation =TextOrientation.Horizontal,
                     Maximum = _fAxesArea,
                     Minimum = -_fAxesArea,
                     MajorGrid = new Grid() { Enabled = false },
@@ -282,6 +316,8 @@ namespace GaussProjection
                 BorderDashStyle = ChartDashStyle.Dot,
                 IsValueShownAsLabel = true,
 
+                Label = "(#VALX,#VAL)",
+
                 SmartLabelStyle = new SmartLabelStyle()
             };
 
@@ -304,8 +340,8 @@ namespace GaussProjection
         /// </summary>
         private void AppendLog(string text)
         {
-            _txtLogs.AppendText($"{text}{Environment.NewLine}");
-            _txtLogs.ScrollToCaret();
+            txtLogs.AppendText($"{text}{Environment.NewLine}");
+            txtLogs.ScrollToCaret();
         }
 
         #endregion
