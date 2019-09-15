@@ -30,7 +30,7 @@ namespace GaussProjection
             txtLogs.ResetText();
 
             //北纬N27°59′14.80″ 东经E113°11′14.35″
-            _orgPoint = BL2XY(27, 59, 14.80, 113, 11, 14.35);
+            _orgPoint = BL2XY(27, 59, 7, 113, 11, 5);
             AppendLog($"原点转换后坐标:(x={_orgPoint.X},y={_orgPoint.Y}) => (0,0)");
 
             InitPoints();
@@ -119,18 +119,18 @@ namespace GaussProjection
             string preLat = ld < 0 ? "W" : "E";
             AppendLog($"{preLng}{bd}°{bf}′{bm}″ {preLat}{ld}°{lf}′{lm}″");
 
-            double b = bd * 3600 + bf * 60 + bm;
-            double l = ld * 3600 + lf * 60 + lm;
+            double lat = bd * 3600 + bf * 60 + bm;
+            double lon = ld * 3600 + lf * 60 + lm;
 
-            double zoning = 6.0;
+            double width = 6.0;
             if (radio_zoning_6.Checked)
-                zoning = 6.0;
+                width = 6.0;
             else if (radio_zoning_3.Checked)
-                zoning = 3.0;
+                width = 3.0;
             else if (radio_zoning_1_5.Checked)
-                zoning = 1.5;
+                width = 1.5;
 
-            Point p = BL2XY(b, l, zoning);
+            Point p = BL2XY(lat, lon, width);
             AppendLog($"高斯投影坐标：({p.Y},{p.X})");
 
             if (_orgPoint.Y == 0 && _orgPoint.X == 0)
@@ -147,21 +147,56 @@ namespace GaussProjection
         /// <summary>
         /// 将经纬度转化为平面坐标
         /// </summary>
-        /// <param name="B">纬度</param>
-        /// <param name="L">经度</param>
-        /// <param name="zoning">分带</param>
-        /// <returns></returns>
-        private Point BL2XY(double B, double L, double zoning)
+        /// <param name="lat">纬度</param>
+        /// <param name="lon">经度</param>
+        /// <param name="zone">分带（6°带、3°带、1.5°带）</param>
+        private Point BL2XY(double lat, double lon, double zone)
         {
-            double d2r, a, e2, e12, l, X,
+            double X, N, B, p, l,  
+                   a, e2, e12, f,
                    m0, m2, m4, m6, m8, a0, a2, a4, a6, a8,
-                   W, N, t2, n2, n0, n, L0, x, y;
+                   n0, n, L0, 
+                   t2, n2, 
+                   x, y;
 
-            a = 6378137.0;
-            e2 = 0.0066943799013;
-            e12 = 0.00673949674227;
-            d2r = 180 * 3600 / Math.PI;
+            // l=lon-L0，L0为中央子午线经度
             l = 0;
+            if (zone == 6)
+            {
+                n0 = (lon / 3600) / 6.0;
+                n = Math.Ceiling(n0);
+                L0 = (6 * n - 3) * 3600;
+                l = lon - L0;
+            }
+            else if (zone == 3)
+            {
+                n = (int)((lon / 3600) / 3.0);
+                L0 = 3 * n * 3600;
+                l = lon - L0;
+            }
+            else if (zone == 1.5)
+            {
+                n = (int)((lon / 3600) / 1.5);
+                L0 = 1.5 * n * 3600;
+                l = lon - L0;
+            }
+
+            // 在WGS -84坐标系中，a=6378137m，f=1/298.257223563
+            a = 6378137; // 地球椭球长半轴
+            f = 1 / 298.257223563;
+            e2 = 2 * f - Math.Pow(f, 2); // e′²=(2f−f²)/(1−f²)
+            e12 = e2 / (1 - Math.Pow(f, 2)); // e′²=(2f−f²)/(1−f²)            
+            p = 180 * 3600 / Math.PI; // ρ=180×3600/π为弧度秒
+
+            // η2=e′2cos2B，e为地球椭球第二偏心率, B为当地纬度
+            B = lat / p;
+            n2 = e12 * Math.Pow(Math.Cos(B), 2);
+            t2 = Math.Tan(B) * Math.Tan(B);
+
+            // N 卯酉圈曲率半径
+            N = a / Math.Sqrt(1 - e2 * Math.Sin(B) * Math.Sin(B));
+
+            // X 子午线弧长计算公式
             m0 = a * (1 - e2);
             m2 = 3 * e2 * m0 / 2;
             m4 = 5 * e2 * m2 / 4;
@@ -172,40 +207,14 @@ namespace GaussProjection
             a4 = m4 / 8 + 3 * m6 / 16 + 7 * m8 / 32;
             a6 = m6 / 32 + m8 / 16;
             a8 = m8 / 128;
+            X = a0 * (B) - a2 * Math.Sin(2 * B) / 2 + a4 * Math.Sin(4 * B) / 4 - a6 * Math.Sin(6 * B) / 6 + a8 * Math.Sin(8 * B) / 8;
 
-            if (zoning == 6)
-            {
-                l = 0;
-                n0 = (L / 3600) / 6.0;
-                n = Math.Ceiling(n0);
-                L0 = (6 * n - 3) * 3600;
-                l = L - L0;
-            }
-            else if (zoning == 3)
-            {
-                l = 0;
-                n = (int)((L / 3600) / 3.0);
-                L0 = 3 * n * 3600;
-                l = L - L0;
-            }
-            else if (zoning == 1.5)
-            {
-                l = 0;
-                n = (int)((L / 3600) / 1.5);
-                L0 = 1.5 * n * 3600;
-                l = L - L0;
-            }
+            // 高斯-克吕格投影正算公式
+            x = X + N * Math.Sin(B) * Math.Cos(B) * Math.Pow(l, 2) / (2 * Math.Pow(p, 2)) + N * Math.Sin(B) * Math.Pow(Math.Cos(B), 3) * (5 - t2 + 9 * n2 + 4 * n2 * n2) * Math.Pow(l, 4) / (24 * Math.Pow(p, 4)) + N * Math.Sin(B) * Math.Pow(Math.Cos(B), 5) * (61 - 58 * t2 + t2 * t2) * Math.Pow(l, 6) / (720 * Math.Pow(p, 6));
+            y = N * Math.Cos(B) * l / p + N * Math.Pow(Math.Cos(B), 3) * (1 - t2 + n2) * Math.Pow(l, 3) / (6 * Math.Pow(p, 3)) + N * Math.Pow(Math.Cos(B), 5) * (5 - 18 * t2 + t2 * t2 + 14 * n2 - 58 * n2 * t2) * Math.Pow(l, 5) / (120 * Math.Pow(p, 5));
 
-            W = Math.Sqrt(1 - e2 * Math.Sin(B / d2r) * Math.Sin(B / d2r));
-            N = a / W;
-            t2 = Math.Tan(B / d2r) * Math.Tan(B / d2r);
-            n2 = e12 * Math.Cos(B / d2r) * Math.Cos(B / d2r);
-            X = a0 * (B / d2r) - a2 * Math.Sin(2 * B / d2r) / 2 + a4 * Math.Sin(4 * B / d2r) / 4 - a6 * Math.Sin(6 * B / d2r) / 6 + a8 * Math.Sin(8 * B / d2r) / 8;
-            x = X + N * Math.Sin(B / d2r) * Math.Cos(B / d2r) * l * l / (2 * Math.Pow(d2r, 2)) + N * Math.Sin(B / d2r) * Math.Pow(Math.Cos(B / d2r), 3) * (5 - t2 + 9 * n2 + 4 * n2 * n2) * Math.Pow(l, 4) / (24 * Math.Pow(d2r, 4)) + N * Math.Sin(B / d2r) * Math.Pow(Math.Cos(B / d2r), 5) * (61 - 58 * t2 + t2 * t2) * Math.Pow(l, 6) / (720 * Math.Pow(d2r, 6));
-            y = N * Math.Cos(B / d2r) * l / d2r + N * Math.Pow(Math.Cos(B / d2r), 3) * (1 - t2 + n2) * Math.Pow(l, 3) / (6 * Math.Pow(d2r, 3)) + N * Math.Pow(Math.Cos(B / d2r), 5) * (5 - 18 * t2 + t2 * t2 + 14 * n2 - 58 * n2 * t2) * Math.Pow(l, 5) / (120 * Math.Pow(d2r, 5));
             x = Math.Round(x, 4);
             y = Math.Round(y, 4);
-
             return new Point(x, y);
         }
 
@@ -228,7 +237,6 @@ namespace GaussProjection
                 sort.Add(Math.Abs(point.X));
                 sort.Add(Math.Abs(point.Y));
             }
-            sort.Add(_fAxesArea);
             _fAxesArea = sort.Max;
 
             //清理Chart
@@ -268,6 +276,7 @@ namespace GaussProjection
         /// </summary>
         private ChartArea CreateChartArea()
         {
+            var inteval = (int)Math.Pow(10, _fAxesArea.ToString().Length) / 10;
             var caArea = new ChartArea
             {
                 #region //Set X Axis
@@ -276,10 +285,10 @@ namespace GaussProjection
                 {
                     ArrowStyle = AxisArrowStyle.Triangle,
                     IntervalAutoMode = IntervalAutoMode.VariableCount,
-                    Interval = Math.Round( 2 * _fAxesArea / 10 > 1 ? 2 * _fAxesArea / 10 : 1,0),
+                    Interval =  inteval,//Math.Round( 2 * _fAxesArea / 10 > 1 ? 2 * _fAxesArea / 10 : 1,0),
                     Title ="X轴",
                     Maximum = _fAxesArea,
-                    Minimum = -_fAxesArea,
+                    Minimum = 0,
                     MajorGrid = new Grid() { Enabled = false },
                     StripLines =
                     {
@@ -298,11 +307,11 @@ namespace GaussProjection
                 {
                     ArrowStyle =  AxisArrowStyle.Triangle,
                     IntervalAutoMode = IntervalAutoMode.VariableCount,
-                    Interval = Math.Round( 2 * _fAxesArea / 10 > 1 ? 2 * _fAxesArea / 10 : 1,0),
+                    Interval = inteval ,//Math.Round( 2 * _fAxesArea / 10 > 1 ? 2 * _fAxesArea / 10 : 1,0),
                     Title="Y轴",
                     TextOrientation =TextOrientation.Horizontal,
                     Maximum = _fAxesArea,
-                    Minimum = -_fAxesArea,
+                    Minimum = 0,
                     MajorGrid = new Grid() { Enabled = false },
                     StripLines =
                     {

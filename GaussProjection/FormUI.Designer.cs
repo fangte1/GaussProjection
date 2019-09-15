@@ -169,7 +169,7 @@
             this.txt_org_l_m.Name = "txt_org_l_m";
             this.txt_org_l_m.Size = new System.Drawing.Size(66, 21);
             this.txt_org_l_m.TabIndex = 5;
-            this.txt_org_l_m.Text = "14.35";
+            this.txt_org_l_m.Text = "5";
             // 
             // txt_org_l_f
             // 
@@ -220,7 +220,7 @@
             this.txt_org_b_m.Name = "txt_org_b_m";
             this.txt_org_b_m.Size = new System.Drawing.Size(66, 21);
             this.txt_org_b_m.TabIndex = 8;
-            this.txt_org_b_m.Text = "14.8";
+            this.txt_org_b_m.Text = "7";
             // 
             // txt_org_b_f
             // 
@@ -315,7 +315,7 @@
             this.btn_InitData.UseVisualStyleBackColor = true;
             this.btn_InitData.Click += new System.EventHandler(this.btn_InitData_Click);
             // 
-            // Form2
+            // FormUI
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -328,7 +328,7 @@
             this.Controls.Add(this.btnAddPoint);
             this.Controls.Add(this.btn_InitData);
             this.Margin = new System.Windows.Forms.Padding(2, 3, 2, 3);
-            this.Name = "Form2";
+            this.Name = "FormUI";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "GPS坐标转平面坐标";
             this.groupBox4.ResumeLayout(false);
