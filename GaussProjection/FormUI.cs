@@ -188,7 +188,7 @@ namespace GaussProjection
             e12 = e2 / (1 - Math.Pow(f, 2)); // e′²=(2f−f²)/(1−f²)            
             p = 180 * 3600 / Math.PI; // ρ=180×3600/π为弧度秒
 
-            // η2=e′2cos2B，e为地球椭球第二偏心率, B为当地纬度
+            // η2=e′²cos²B，e′为地球椭球第二偏心率, B为当地纬度
             B = lat / p;
             n2 = e12 * Math.Pow(Math.Cos(B), 2);
             t2 = Math.Tan(B) * Math.Tan(B);
